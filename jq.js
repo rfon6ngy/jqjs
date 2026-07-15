@@ -2524,44 +2524,23 @@ const functions = {
         if (nameType(input) != 'object' && nameType(input) != 'array' && nameType(input) != 'null')
             throw 'can only set path on objects and arrays, not ' + nameType(input)
         for (let path of args[0].apply(input, conf)) {
-            let obj = JSON.parse(JSON.stringify(input));
-            let current = obj;
-            for (let key of path.slice(0, -1)) {
-                if (obj === null) {
-                    if (nameType(key) == 'number') {
-                        obj = [];
-                        current = obj;
-                    } else {
-                        obj = {};
-                        current = obj;
-                    }
-                } else if (!current.hasOwnProperty(key)) {
-                    if (nameType(key) == 'number')
-                        current[key] = [];
-                    else
-                        current[key] = {};
-                }
-                current = current[key];
+            if (path.length === 0) { // handle empty path as root replacement
+                for (let val of args[1].apply(input, conf))
+                    yield val;
+                continue;
+            }
+            const clone = input !== null ? JSON.parse(JSON.stringify(input)) : (nameType(path[0]) == 'number' ? [] : {});
+            let current = clone;
+            // dig while creating missing intermediate value according to next path
+            for (let i = 0; i < path.length - 1; i++) {
+                if (!current.hasOwnProperty(path[i]))
+                    current[path[i]] = nameType(path[i + 1]) == 'number' ? [] : {};
+                current = current[path[i]];
             }
             for (let val of args[1].apply(input, conf)) {
-                let key = path[path.length - 1];
-                if (obj === null) {
-                    if (nameType(key) == 'number') {
-                        obj = [];
-                        current = obj;
-                    } else {
-                        obj = {};
-                        current = obj;
-                    }
-                } else if (!current.hasOwnProperty(key)) {
-                    if (nameType(key) == 'number')
-                        current = [];
-                    else
-                        current = {};
-                }
-                current[key] = val;
+                current[path.at(-1)] = val;
             }
-            yield obj;
+            yield clone;
         }
     }, {params: [{label: 'paths'}, {label: 'value'}]}),
     'delpaths/1': Object.assign(function*(input, conf, args) {
