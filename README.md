@@ -4,19 +4,23 @@ implements the core language features in pure JavaScript.
 The main entry point to jqjs is the compile function, which turns a jq
 program string into a generator function:
 
-    import jq from './jq.js'
-    let filter = jq.compile(".x[].y")
-    for (let v of filter({x:[{y:2}, {y:4}]}) { ... }
+```js
+import jq from './jq.js'
+let filter = jq.compile(".x[].y")
+for (let v of filter({x:[{y:2}, {y:4}]}) { ... }
+```
 
 The module also has a prettyPrint function for rendering an object to
 text.
 
 As a shorthand, the default export is itself callable in two ways:
 
-    let filter = jq('.x[].y')
-    for (let x of filter(obj)) { ... }
+```js
+let filter = jq('.x[].y')
+for (let x of filter(obj)) { ... }
 
-    for (let x of jq('.x[].y', obj)) { ... }
+for (let x of jq('.x[].y', obj)) { ... }
+```
 
 With a single argument, this is equivalent to jq.compile,
 and with two arguments it is equivalent to jq.compile(arg1)(arg2).
@@ -112,37 +116,51 @@ Installing and using
 
 The jq.js module can be imported and used directly:
 
-    import jq from "./jqjs.js";
+```js
+import jq from "./jqjs.js";
+```
 
 but this library can also be installed through npm:
 
-    npm install @michaelhomer/jqjs
+```bash
+npm install @michaelhomer/jqjs
+```
 
 then
 
-    import jq from "@michaelhomer/jqjs";
-    // or
-    const jq = require("@michaelhomer/jqjs");
+```js
+import jq from "@michaelhomer/jqjs";
+// or
+const jq = require("@michaelhomer/jqjs");
+```
 
 Or
 
-    npm install mwh/jqjs
+```bash
+npm install mwh/jqjs
+```
 
 then
 
-    import jq from "jqjs/jq.js";
-    // or
-    const jq = require("jqjs/jq.js");
+```js
+import jq from "jqjs/jq.js";
+// or
+const jq = require("jqjs/jq.js");
+```
 
 After that
 
-    let func = jq.compile(".x[].y")
+```js
+let func = jq.compile(".x[].y")
+```
 
 will create a `func` function that can be given any JavaScript
 object to process, and will return an iterator producing each output
 of the jq program:
 
-    for (let v of filter({x:[{y:2}, {y:4}]}) { ... }
+```js
+for (let v of filter({x:[{y:2}, {y:4}]}) { ... }
+```
 
 will run the loop body with `v` holding 2, then 4, then stop.
 
@@ -153,18 +171,24 @@ and objects.
 
 The default export can also be used as a tag function:
 
-    jq`.x[].y`
+```js
+jq`.x[].y`
+```
 
 With no interpolations, this is almost the same as jq.compile, but uses
 raw strings so no escape sequences are necessary. Interpolated
 expressions are used *as JSON values*, so:
 
-    const obj = {x:1, y: [2, 3]}
-    let func = jq`. + ${obj} | paths`
+```js
+const obj = {x:1, y: [2, 3]}
+let func = jq`. + ${obj} | paths`
+```
 
 is equivalent to
 
-    let func = jq.compile('. + {"x": 1, "y": [2, 3]} | paths')
+```js
+let func = jq.compile('. + {"x": 1, "y": [2, 3]} | paths')
+```
 
 As a result, they cannot be used to splice in e.g. a function name,
 other syntactic element, or the middle of a string, only a whole value.
